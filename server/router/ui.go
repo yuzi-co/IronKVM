@@ -29,11 +29,11 @@ func uiRouter(r *gin.Engine) {
 	service := webui.NewService(uiStore)
 	api := r.Group("/api").Use(middleware.CheckToken(), middleware.RequireRole(authn.RoleAdmin))
 
-	api.GET("/ui", service.GetStatus)          // served UI, previous UI, signature check
-	api.GET("/ui/latest", service.GetLatest)   // UI package in the update feed
-	api.POST("/ui/update", service.Update)     // install the feed's UI package
-	api.POST("/ui/upload", service.Upload)     // install an uploaded UI package
-	api.POST("/ui/rollback", service.Rollback) // back to the previous UI
+	api.GET("/ui", service.GetStatus)                                            // served UI, previous UI, signature check
+	api.GET("/ui/latest", service.GetLatest)                                     // UI package in the update feed
+	api.POST("/ui/update", middleware.RefuseOnVersionBoot(), service.Update)     // install the feed's UI package
+	api.POST("/ui/upload", middleware.RefuseOnVersionBoot(), service.Upload)     // install an uploaded UI package
+	api.POST("/ui/rollback", middleware.RefuseOnVersionBoot(), service.Rollback) // back to the previous UI
 }
 
 // staticRoot is one web directory and the handler that serves it.

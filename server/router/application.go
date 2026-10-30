@@ -12,9 +12,9 @@ func applicationRouter(r *gin.Engine) {
 	service := application.NewService()
 	api := r.Group("/api").Use(middleware.CheckToken(), middleware.RequireRole(authn.RoleAdmin))
 
-	api.GET("/application/version", service.GetVersion)            // get application version
-	api.POST("/application/update", service.Update)                // update application
-	api.POST("/application/update/offline", service.OfflineUpdate) // update application offline
+	api.GET("/application/version", service.GetVersion)                                              // get application version
+	api.POST("/application/update", middleware.RefuseOnVersionBoot(), service.Update)                // update application
+	api.POST("/application/update/offline", middleware.RefuseOnVersionBoot(), service.OfflineUpdate) // update application offline
 
 	api.GET("/application/preview", service.GetPreview)  // get preview updates state
 	api.POST("/application/preview", service.SetPreview) // set preview updates state
