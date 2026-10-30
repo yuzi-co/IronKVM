@@ -2921,6 +2921,8 @@ const nl = {
         'De browser weigerde de beveiligde verbinding voor toetsenbord en muis, en doet dat zonder te vragen. Het certificaat dat dit apparaat heeft gegenereerd, wordt nog niet vertrouwd. Open dit adres in een nieuw tabblad, accepteer het certificaat en vernieuw daarna de pagina. Het certificaat installeren is de betrouwbare oplossing.',
       disconnectedNever:
         'De verbinding voor toetsenbord en muis kon niet worden geopend. De rest van de pagina werkt, omdat die deze verbinding niet gebruikt. Controleer of niets tussen u en het apparaat haar blokkeert.',
+      disconnectedOrigin:
+        'Het apparaat ontvangt de verzoeken van deze pagina voor de host {{host}}, maar de pagina staat op {{origin}}. Een reverse proxy voor het apparaat moet de oorspronkelijke Host-header doorgeven (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'De verbinding voor toetsenbord en muis is verbroken en niet hersteld. Na een herstart maakt ze vanzelf opnieuw verbinding; als dit blijft, vernieuw dan de pagina.',
       hidDisabled: 'HID is uitgeschakeld op dit apparaat (/boot/disable_hid).',

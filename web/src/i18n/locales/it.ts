@@ -2926,6 +2926,8 @@ const it = {
         'Il browser ha rifiutato la connessione sicura che trasporta tastiera e mouse, cosa che fa senza chiedere. Il certificato generato da questo dispositivo non è ancora attendibile. Apri questo indirizzo in una nuova scheda, accetta il certificato, poi ricarica. Installare il certificato è la soluzione affidabile.',
       disconnectedNever:
         'Impossibile aprire la connessione che trasporta tastiera e mouse. Il resto della pagina funziona perché non la usa. Verifica che nulla tra te e il dispositivo la stia bloccando.',
+      disconnectedOrigin:
+        'Il dispositivo riceve le richieste di questa pagina per l’host {{host}}, ma la pagina si trova su {{origin}}. Un reverse proxy davanti al dispositivo deve passare l’header Host originale (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'La connessione che trasporta tastiera e mouse si è interrotta e non è stata ripristinata. Si riconnette da sola dopo un riavvio; se il problema persiste, ricarica la pagina.',
       hidDisabled: "L'HID è disattivato su questo dispositivo (/boot/disable_hid).",

@@ -2882,6 +2882,8 @@ const vi = {
         'Trình duyệt đã từ chối kết nối bảo mật truyền bàn phím và chuột, và nó làm vậy mà không hỏi. Chứng chỉ do thiết bị này tạo ra chưa được tin cậy. Hãy mở địa chỉ này trong tab mới, chấp nhận chứng chỉ, rồi tải lại. Cài đặt chứng chỉ là cách khắc phục đáng tin cậy.',
       disconnectedNever:
         'Không mở được kết nối truyền bàn phím và chuột. Phần còn lại của trang vẫn hoạt động vì không dùng kết nối này. Hãy kiểm tra xem có gì giữa bạn và thiết bị đang chặn nó không.',
+      disconnectedOrigin:
+        'Thiết bị nhận các yêu cầu của trang này cho máy chủ {{host}}, nhưng trang nằm ở {{origin}}. Reverse proxy đặt trước thiết bị phải chuyển tiếp nguyên header Host gốc (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Kết nối truyền bàn phím và chuột đã bị mất và chưa khôi phục. Nó tự kết nối lại sau khi khởi động lại; nếu tình trạng này kéo dài, hãy tải lại trang.',
       hidDisabled: 'HID đã bị tắt trên thiết bị này (/boot/disable_hid).',

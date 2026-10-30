@@ -2887,6 +2887,8 @@ const nb = {
         'Nettleseren avviste den sikre tilkoblingen som overfører tastatur og mus, og det gjør den uten å spørre. Sertifikatet denne enheten genererte er ikke klarert ennå. Åpne denne adressen i en ny fane, godta sertifikatet og last inn siden på nytt. Å installere sertifikatet er den pålitelige løsningen.',
       disconnectedNever:
         'Tilkoblingen som overfører tastatur og mus kunne ikke åpnes. Resten av siden virker fordi den ikke bruker den. Sjekk at ingenting mellom deg og enheten blokkerer den.',
+      disconnectedOrigin:
+        'Enheten mottar denne sidens forespørsler til verten {{host}}, men siden ligger på {{origin}}. En omvendt proxy foran enheten må sende videre den opprinnelige Host-headeren (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Tilkoblingen som overfører tastatur og mus ble brutt og har ikke kommet tilbake. Den kobler til igjen av seg selv etter en omstart; hvis dette vedvarer, last inn siden på nytt.',
       hidDisabled: 'HID er slått av på denne enheten (/boot/disable_hid).',

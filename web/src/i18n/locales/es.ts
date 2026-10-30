@@ -2932,6 +2932,8 @@ const es = {
         'El navegador ha rechazado la conexión segura que transporta el teclado y el ratón, algo que hace sin preguntar. El certificado que generó este dispositivo aún no es de confianza. Abre esta dirección en una pestaña nueva, acepta el certificado y recarga. Instalar el certificado es la solución fiable.',
       disconnectedNever:
         'No se pudo abrir la conexión que transporta el teclado y el ratón. El resto de la página funciona porque no la usa. Comprueba que nada entre tú y el dispositivo la esté bloqueando.',
+      disconnectedOrigin:
+        'El dispositivo recibe las peticiones de esta página para el host {{host}}, pero la página está en {{origin}}. Un proxy inverso delante del dispositivo debe pasar la cabecera Host original (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'La conexión que transporta el teclado y el ratón se perdió y no se ha recuperado. Se reconecta sola tras un reinicio; si esto persiste, recarga la página.',
       hidDisabled: 'El HID está desactivado en este dispositivo (/boot/disable_hid).',

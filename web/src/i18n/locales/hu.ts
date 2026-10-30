@@ -2918,6 +2918,8 @@ const hu = {
         'A böngésző kérdés nélkül elutasította a billentyűzetet és az egeret továbbító biztonságos kapcsolatot. Az eszköz által generált tanúsítvány még nem megbízható. Nyissa meg ezt a címet egy új lapon, fogadja el a tanúsítványt, majd töltse újra az oldalt. A megbízható megoldás a tanúsítvány telepítése.',
       disconnectedNever:
         'A billentyűzetet és az egeret továbbító kapcsolatot nem sikerült megnyitni. Az oldal többi része működik, mert nem használja ezt a kapcsolatot. Ellenőrizze, hogy semmi sem blokkolja Ön és az eszköz között.',
+      disconnectedOrigin:
+        'Az eszköz ennek az oldalnak a kéréseit a(z) {{host}} hosztra kapja, de az oldal itt van: {{origin}}. Az eszköz előtti fordított proxynak át kell adnia az eredeti Host fejlécet (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'A billentyűzetet és az egeret továbbító kapcsolat megszakadt, és nem állt helyre. Újraindítás után magától újracsatlakozik; ha ez az állapot megmarad, töltse újra az oldalt.',
       hidDisabled: 'A HID ki van kapcsolva ezen az eszközön (/boot/disable_hid).',

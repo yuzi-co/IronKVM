@@ -2898,6 +2898,8 @@ const id = {
         'Browser menolak koneksi aman yang membawa keyboard dan tetikus, dan melakukannya tanpa bertanya. Sertifikat yang dibuat perangkat ini belum dipercaya. Buka alamat ini di tab baru, terima sertifikatnya, lalu muat ulang. Memasang sertifikat adalah solusi yang andal.',
       disconnectedNever:
         'Koneksi yang membawa keyboard dan tetikus tidak dapat dibuka. Bagian lain halaman tetap berfungsi karena tidak menggunakannya. Pastikan tidak ada yang memblokirnya di antara Anda dan perangkat.',
+      disconnectedOrigin:
+        'Perangkat menerima permintaan halaman ini untuk host {{host}}, padahal halaman berada di {{origin}}. Reverse proxy di depan perangkat harus meneruskan header Host asli (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Koneksi yang membawa keyboard dan tetikus terputus dan belum pulih. Koneksi tersambung kembali sendiri setelah restart; jika tetap begini, muat ulang halaman.',
       hidDisabled: 'HID dinonaktifkan di perangkat ini (/boot/disable_hid).',

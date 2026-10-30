@@ -2923,6 +2923,8 @@ const ca = {
         'El navegador ha rebutjat la connexió segura que transporta el teclat i el ratolí, cosa que fa sense preguntar. El certificat que ha generat aquest dispositiu encara no és de confiança. Obriu aquesta adreça en una pestanya nova, accepteu el certificat i torneu a carregar. Instal·lar el certificat és la solució fiable.',
       disconnectedNever:
         "No s'ha pogut obrir la connexió que transporta el teclat i el ratolí. La resta de la pàgina funciona perquè no la fa servir. Comproveu que res entre vosaltres i el dispositiu la bloquegi.",
+      disconnectedOrigin:
+        'El dispositiu rep les peticions d’aquesta pàgina per al host {{host}}, però la pàgina és a {{origin}}. Un servidor intermediari invers davant del dispositiu ha de passar la capçalera Host original (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         "La connexió que transporta el teclat i el ratolí s'ha perdut i no s'ha recuperat. Es torna a connectar sola després d'un reinici; si continua així, torneu a carregar la pàgina.",
       hidDisabled: "L'HID està desactivat en aquest dispositiu (/boot/disable_hid).",

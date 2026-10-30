@@ -2894,6 +2894,8 @@ const se = {
         'Webbläsaren avvisade den säkra anslutningen som bär tangentbord och mus, och det gör den utan att fråga. Certifikatet som den här enheten skapade är inte betrott ännu. Öppna den här adressen i en ny flik, godkänn certifikatet och ladda sedan om. Att installera certifikatet är den pålitliga lösningen.',
       disconnectedNever:
         'Anslutningen som bär tangentbord och mus kunde inte öppnas. Resten av sidan fungerar eftersom den inte använder den. Kontrollera att inget mellan dig och enheten blockerar den.',
+      disconnectedOrigin:
+        'Enheten tar emot den här sidans förfrågningar för värden {{host}}, men sidan finns på {{origin}}. En omvänd proxy framför enheten måste skicka vidare den ursprungliga Host-headern (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Anslutningen som bär tangentbord och mus bröts och har inte kommit tillbaka. Den återansluter av sig själv efter en omstart; om detta kvarstår, ladda om sidan.',
       hidDisabled: 'HID är avstängt på den här enheten (/boot/disable_hid).',

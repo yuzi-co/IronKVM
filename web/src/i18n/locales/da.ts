@@ -2890,6 +2890,8 @@ const da = {
         'Browseren afviste den sikre forbindelse, der bærer tastatur og mus, og det gør den uden at spørge. Certifikatet, som denne enhed har genereret, er endnu ikke betroet. Åbn denne adresse i en ny fane, accepter certifikatet, og genindlæs derefter. Den pålidelige løsning er at installere certifikatet.',
       disconnectedNever:
         'Forbindelsen, der bærer tastatur og mus, kunne ikke åbnes. Resten af siden virker, fordi den ikke bruger forbindelsen. Kontroller, at intet mellem dig og enheden blokerer den.',
+      disconnectedOrigin:
+        'Enheden modtager denne sides forespørgsler til værten {{host}}, men siden ligger på {{origin}}. En reverse proxy foran enheden skal videregive den oprindelige Host-header (Caddy: `header_up Host {host}`; nginx: `proxy_set_header Host $host`).',
       disconnectedDropped:
         'Forbindelsen, der bærer tastatur og mus, blev afbrudt og er ikke kommet tilbage. Den genopretter sig selv efter en genstart; hvis dette bliver ved, så genindlæs siden.',
       hidDisabled: 'HID er slået fra på denne enhed (/boot/disable_hid).',

@@ -2935,6 +2935,8 @@ const fr = {
         "Le navigateur a refusé la connexion sécurisée qui transporte le clavier et la souris, et il le fait sans demander. Le certificat généré par cet appareil n'est pas encore approuvé. Ouvrez cette adresse dans un nouvel onglet, acceptez le certificat, puis rechargez. Installer le certificat est la solution fiable.",
       disconnectedNever:
         "La connexion qui transporte le clavier et la souris n'a pas pu être ouverte. Le reste de la page fonctionne car il ne l'utilise pas. Vérifiez que rien entre vous et l'appareil ne la bloque.",
+      disconnectedOrigin:
+        'L’appareil reçoit les requêtes de cette page pour l’hôte {{host}}, mais la page est à l’adresse {{origin}}. Un proxy inverse placé devant l’appareil doit transmettre l’en-tête Host d’origine (Caddy : `header_up Host {host}` ; nginx : `proxy_set_header Host $host`).',
       disconnectedDropped:
         "La connexion qui transporte le clavier et la souris a été perdue et n'est pas revenue. Elle se rétablit d'elle-même après un redémarrage ; si le problème persiste, rechargez la page.",
       hidDisabled: 'Le HID est désactivé sur cet appareil (/boot/disable_hid).',

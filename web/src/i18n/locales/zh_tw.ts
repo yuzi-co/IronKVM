@@ -2763,6 +2763,8 @@ const zh_tw = {
         '瀏覽器拒絕了傳輸鍵盤和滑鼠的安全連線，而且不會詢問。此裝置產生的憑證尚未受信任。請在新分頁中開啟此位址並接受憑證，然後重新載入。安裝該憑證才是可靠的解決方法。',
       disconnectedNever:
         '無法建立傳輸鍵盤和滑鼠的連線。頁面其他部分不使用該連線，因此仍可正常運作。請檢查您與裝置之間是否有東西封鎖了它。',
+      disconnectedOrigin:
+        '裝置收到的是此頁面發往主機 {{host}} 的請求，但頁面位於 {{origin}}。裝置前方的反向代理必須傳遞原始的 Host 標頭 (Caddy: `header_up Host {host}`；nginx: `proxy_set_header Host $host`)。',
       disconnectedDropped:
         '傳輸鍵盤和滑鼠的連線已中斷，且尚未恢復。重新啟動後它會自動重新連線；如果一直如此，請重新載入頁面。',
       hidDisabled: '此裝置已關閉 HID（/boot/disable_hid）。',
