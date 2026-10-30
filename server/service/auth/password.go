@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"NanoKVM-Server/authn"
@@ -22,6 +24,17 @@ var systemPasswordUpdater = changeRootPassword
 // board with slots it is the only thing that makes a password change outlive
 // the slot it was set on.
 var saveIdentity = utils.SaveIdentity
+
+// versionBoot and copyRootPasswordToStock are variables so a test can stand in
+// for the kernel command line and for the version tool.
+var (
+	versionBoot             = middleware.VersionBoot
+	copyRootPasswordToStock = runStockPassword
+)
+
+// versionTool is the version store's operator tool (ironkvm-dist
+// generic/version). It is only on images that boot from the version store.
+const versionTool = "/usr/bin/version"
 
 func (s *Service) ChangePassword(c *gin.Context) {
 	var req proto.ChangePasswordReq
@@ -75,6 +88,20 @@ func (s *Service) ChangePassword(c *gin.Context) {
 
 	if err := saveIdentity(); err != nil {
 		log.Warnf("password changed but the identity write-back failed: %s", err)
+	}
+
+	// On a card with the version store, stock's root on p2 keeps a shadow of
+	// its own, and stock is where the card ends up when its versions fail.
+	// Copying root's new hash there makes stock's root password the owner's
+	// rather than stock's published default (ironkvm-dist #179). Only the
+	// device owner's change sets root's password, and only a version boot has
+	// stock's root beside it. A failure is logged and does not fail the
+	// request, for the same reason as the write-back above; the next boot
+	// copies the hash again.
+	if versionBoot() != "" && ownsSystemPassword(principal.Username) {
+		if err := copyRootPasswordToStock(); err != nil {
+			log.Warnf("password changed but stock's root password was not updated: %s", err)
+		}
 	}
 
 	rsp.OkRsp(c)
@@ -131,6 +158,24 @@ func changeUserPassword(username, encryptedPassword string) error {
 // sets the root password. Only the enabled device owner's does.
 func isSystemPasswordOwner(user *authn.User) bool {
 	return user.SystemAccount && user.Role == authn.RoleAdmin && user.Enabled
+}
+
+// ownsSystemPassword reports whether username is the device owner, whose
+// password change also set the root password.
+func ownsSystemPassword(username string) bool {
+	user, err := authn.DefaultStore.Get(username)
+	return err == nil && isSystemPasswordOwner(user)
+}
+
+// runStockPassword runs `version stock-password`, which copies root's hash from
+// /etc/shadow to stock's /etc/shadow on p2.
+func runStockPassword() error {
+	out, err := exec.Command(versionTool, "stock-password").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s stock-password: %w: %s", versionTool, err, strings.TrimSpace(string(out)))
+	}
+	log.Info(strings.TrimSpace(string(out)))
+	return nil
 }
 
 func changeRootPassword(password string) error {
