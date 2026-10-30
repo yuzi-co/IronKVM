@@ -5,8 +5,14 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
+	"time"
 
 	"NanoKVM-Server/config"
+	"NanoKVM-Server/proto"
+
+	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 )
 
 // SameOrigin reports whether the request may act on the device.
@@ -53,4 +59,57 @@ func hostname(hostport string) string {
 	}
 
 	return strings.Trim(hostport, "[]")
+}
+
+// ForbiddenOrigin is the data of a 403 that refused a request's origin. Both
+// names are ones the requester already holds: the Origin it sent and the Host
+// the device saw. A page behind a reverse proxy that rewrites Host reads them
+// to tell the operator which names disagree (ironkvm-dist#178).
+type ForbiddenOrigin struct {
+	Origin string `json:"origin"`
+	Host   string `json:"host"`
+}
+
+// originHost is the host part of an Origin header, or the header as sent when
+// it does not parse.
+func originHost(origin string) string {
+	if u, err := url.Parse(origin); err == nil && u.Host != "" {
+		return u.Host
+	}
+	return origin
+}
+
+const originLogInterval = time.Minute
+
+var (
+	originLogMu   sync.Mutex
+	originLogLast time.Time
+	// originNow and originWarn are vars so a test can drive the clock and
+	// watch the log.
+	originNow  = time.Now
+	originWarn = func(origin, host string) {
+		log.Warnf("rejected request from origin %s to host %s: a reverse proxy in front of the device must pass the original Host header", origin, host)
+	}
+)
+
+// logForbiddenOrigin warns about a refused origin at most once a minute. A page
+// whose socket keeps retrying would otherwise fill the log.
+func logForbiddenOrigin(origin, host string) {
+	originLogMu.Lock()
+	now := originNow()
+	if !originLogLast.IsZero() && now.Sub(originLogLast) < originLogInterval {
+		originLogMu.Unlock()
+		return
+	}
+	originLogLast = now
+	originLogMu.Unlock()
+
+	originWarn(origin, host)
+}
+
+// OriginCheck answers a page that asks whether the device accepts its origin.
+// The route sits behind CheckToken, which refuses a foreign origin with a 403
+// that names both hosts, so reaching here means origin and session both pass.
+func OriginCheck(c *gin.Context) {
+	(&proto.Response{}).OkRsp(c)
 }
