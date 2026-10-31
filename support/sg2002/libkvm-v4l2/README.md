@@ -64,10 +64,11 @@ from "nothing captured" before a pipeline is up.
 | `set_frame_detact` | Recorded only: every MJPEG read encodes a picture, and `5` ("not changed") is never answered. |
 | `kvmv_codec_supported` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). `1` for codec 0 (MJPEG); `1` for codecs 1 (H.264) and 2 (H.265) when their encoder node exists. The server finds it with `dlsym` and, without it, assumes all three. |
 | `kvmv_set_keep_aspect` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`). How a source of another shape than the requested size is fitted: `1` (the default) keeps the source's shape at the requested height, `0` stretches it to the requested size. The next read rebuilds the encoder pipeline when it changed; MJPEG follows from the next picture. The server sets it from its aspect setting through `dlsym`. |
+| `kvmv_native_capture_open`, `kvmv_native_capture_close` | Not in `kvm_vision.h` or Sipeed's library (`abi-extensions.txt`, ironkvm-dist#91). The capture worker: a thread, `kvmv-capture`, that makes `kvmv_read_video` calls for the server. The server fills in a request in a shared block (`server/include/kvmv_native_capture.h`), writes to one eventfd and waits for another in its netpoller; the worker reads, fills in the result, the access unit's address and its `kvmv_video_times`, and writes back. The access unit stays valid until the next request, when the worker frees its slot. So the server makes no blocking cgo call per frame, and with one P the Go runtime need not hand that P off on each one. The worker reads only when asked, so when to read stays with the server. Open answers `NULL` for another version of the block. The server uses it only with `KVM_NATIVE_CAPTURE=on`. |
 | `set_venc_auto_recyc` | Recorded only. There is one encoder. |
 | `kvmv_hdmi_control` | Stops and starts capture in software on every board: `0` tears the pipeline down and reads answer `-1`; `1` allows capture again. Answers `0`. The receiver is not powered down (the vendor library does that through a GPIO on the PCIe board only, and answers `-1` elsewhere). |
 | `kvmv_hdmi_signal_active` | `1` when capture is enabled and the receiver has a source. Like the vendor library it reads `0` until `kvmv_hdmi_control(1)`. |
-| `kvmv_deinit` | Joins the monitor thread, tears the pipeline down, frees the slots. `kvmv_init` may follow. |
+| `kvmv_deinit` | Stops the capture worker after the read it is in, joins the monitor thread, tears the pipeline down, frees the slots. `kvmv_init` may follow. |
 
 Every runtime change the encoder refuses (an ioctl error) rebuilds the pipeline instead, which is
 what the vendor library does for all of them. The encoder's actual bitrate, GOP and frame rate
@@ -293,7 +294,7 @@ container. `make clean` keeps `deps/`; `make distclean` removes it.
 
 - `build/libkvm.so`: soname `libkvm.so`, `NEEDED` `libgcc_s.so.1` and `libc.so`, no `RUNPATH`
   needed. It exports the 13 functions in `abi-symbols.txt`, all strong (`nm` type `T`), and
-  `kvmv_codec_supported` and `kvmv_set_keep_aspect` (`abi-extensions.txt`), nothing else; libjpeg-turbo is inside it.
+  the extensions in `abi-extensions.txt`, nothing else; libjpeg-turbo is inside it.
   Nothing in the library calls libgcc_s. The server needs it: its crtbegin calls
   `__register_frame_info` through the PLT, and the server NEEDs only `libkvm.so` and `libc.so`,
   relying on Sipeed's library (`NEEDED` OpenCV, `libkvm_mmf.so`, `libstdc++.so.6`,
@@ -306,7 +307,8 @@ container. `make clean` keeps `deps/`; `make distclean` removes it.
   frame slots, format negotiation against mock capture, VPSS and Coda drivers, the encoder
   frame-rate policy, the uncached copy, the software JPEG path (NV12 split, encode, decode back), and the JPEG
   unit against a mock `sg2002-jpeg` (copy and dma-buf import, quality, reconfiguration, a bad
-  picture, widths it cannot take).
+  picture, widths it cannot take), and the capture worker against a fake library (requests,
+  results, times, slot release, wakeups with no request, stop and restart).
 - `make check-symbols`: the exports against `abi-symbols.txt`, `abi-extensions.txt` and
   Sipeed's library (any other export fails), and the `NEEDED` entries for `libgcc_s.so.1` and
   `libc.so`.

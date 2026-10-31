@@ -1,8 +1,9 @@
 /*
  * Host unit tests for libkvm-v4l2: Annex-B classification, parameter-set
  * handling, SPS parsing, the policy decisions, the frame slots, format
- * negotiation against mock capture, VPSS and Coda drivers, and the JPEG unit
- * against a mock sg2002-jpeg.
+ * negotiation against mock capture, VPSS and Coda drivers, the JPEG unit
+ * against a mock sg2002-jpeg, and the native capture worker against a fake
+ * library.
  *
  * Built and run by `make test`.
  */
@@ -12,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 #include <sys/mman.h>
 #include <unistd.h>
 #include <linux/videodev2.h>
@@ -24,6 +26,7 @@
 #include "kvmv_pipeline.h"
 #include "kvmv_policy.h"
 #include "kvmv_slots.h"
+#include "kvmv_worker.h"
 
 static int failures;
 static int checks;
@@ -2019,6 +2022,183 @@ static void test_vui_colour(void)
 	CHECK_EQ(kvmv_hevc_au_colour(au, grown, sizeof(au), NULL), grown);
 }
 
+/* ---- the native capture worker ------------------------------------- */
+
+/* A fake library behind the worker: each read hands out the next of two
+ * buffers, and the test sees what was asked and what came back. */
+static struct {
+	uint8_t buf[2][16];
+	int reads;
+	int released;
+	int outstanding; /* buffers handed out and not given back */
+	int result; /* what the next read answers */
+	int max_outstanding;
+	uint16_t width, height, bitrate;
+	uint8_t codec, gop, fps;
+} fake;
+
+static int fake_read(uint16_t width, uint16_t height, uint8_t codec,
+		     uint16_t bitrate, uint8_t gop, uint8_t fps, uint8_t **data,
+		     uint32_t *size)
+{
+	fake.width = width;
+	fake.height = height;
+	fake.codec = codec;
+	fake.bitrate = bitrate;
+	fake.gop = gop;
+	fake.fps = fps;
+	*data = NULL;
+	*size = 0;
+	if (fake.result < 0)
+		return fake.result;
+	*data = fake.buf[fake.reads % 2];
+	*size = 10 + (uint32_t)fake.reads;
+	memset(*data, fake.reads + 1, sizeof(fake.buf[0]));
+	fake.reads++;
+	fake.outstanding++;
+	if (fake.outstanding > fake.max_outstanding)
+		fake.max_outstanding = fake.outstanding;
+	return fake.result;
+}
+
+static int fake_release(uint8_t **data)
+{
+	CHECK(*data == fake.buf[0] || *data == fake.buf[1]);
+	fake.released++;
+	fake.outstanding--;
+	return IMG_H264_TYPE_PF;
+}
+
+static int fake_times(uint64_t *times, int n)
+{
+	int i;
+
+	for (i = 0; i < n; i++)
+		times[i] = 1000 + (uint64_t)i;
+	return n;
+}
+
+static const struct kvmv_worker_ops fake_ops = {
+	.read = fake_read,
+	.release = fake_release,
+	.times = fake_times,
+};
+
+/* What the server does: fill in the request, write request_fd, and wait for
+ * done_fd. Answers 1 when done_fd fired within the timeout. */
+static int worker_request(struct kvmv_worker *w, uint32_t seq, int timeout_ms)
+{
+	struct kvmv_native_capture *s = &w->shared;
+	struct pollfd pfd = { .fd = s->done_fd, .events = POLLIN };
+	uint64_t one = 1, count;
+
+	if (seq != 0) {
+		s->width = 1280;
+		s->height = 720;
+		s->codec = 2;
+		s->bitrate = 3000;
+		s->gop = 0;
+		s->fps = 0;
+		__atomic_store_n(&s->req_seq, seq, __ATOMIC_RELEASE);
+	}
+	CHECK_EQ(write(s->request_fd, &one, sizeof(one)), sizeof(one));
+	if (poll(&pfd, 1, timeout_ms) != 1)
+		return 0;
+	CHECK_EQ(read(s->done_fd, &count, sizeof(count)), sizeof(count));
+	return 1;
+}
+
+static void test_worker(void)
+{
+	static struct kvmv_worker w;
+	struct kvmv_native_capture *s = &w.shared;
+	uint64_t count;
+
+	memset(&fake, 0, sizeof(fake));
+	fake.result = IMG_H264_TYPE_IF;
+	CHECK_EQ(kvmv_worker_init(&w, &fake_ops), 0);
+	CHECK_EQ(s->version, KVMV_NATIVE_CAPTURE_VERSION);
+	CHECK_EQ(s->size, sizeof(*s));
+	CHECK(s->request_fd >= 0);
+	CHECK(s->done_fd >= 0);
+	/* done_fd is for a poller: reading it empty must not block. */
+	CHECK_EQ(read(s->done_fd, &count, sizeof(count)), -1);
+	CHECK_EQ(errno, EAGAIN);
+	/* A second init keeps the block and its descriptors. */
+	{
+		int request_fd = s->request_fd;
+
+		CHECK_EQ(kvmv_worker_init(&w, &fake_ops), 0);
+		CHECK_EQ(s->request_fd, request_fd);
+	}
+	CHECK_EQ(kvmv_worker_start(&w), 0);
+	CHECK_EQ(kvmv_worker_start(&w), 0); /* running already */
+
+	/* A keyframe, with the arguments passed through and the times filled. */
+	CHECK(worker_request(&w, 1, 2000));
+	CHECK_EQ(__atomic_load_n(&s->res_seq, __ATOMIC_ACQUIRE), 1);
+	CHECK_EQ(s->result, IMG_H264_TYPE_IF);
+	CHECK_EQ(s->data_size, 10);
+	CHECK(s->data == fake.buf[0]);
+	CHECK_EQ(s->data[0], 1);
+	CHECK_EQ(s->ntimes, KVMV_NATIVE_CAPTURE_TIMES);
+	CHECK_EQ(s->times[0], 1000);
+	CHECK_EQ(s->times[4], 1004);
+	CHECK(s->mono_ns > 0);
+	CHECK(s->real_ns > s->mono_ns);
+	CHECK_EQ(fake.width, 1280);
+	CHECK_EQ(fake.height, 720);
+	CHECK_EQ(fake.codec, 2);
+	CHECK_EQ(fake.bitrate, 3000);
+	/* The slot stays with the server until its next request. */
+	CHECK_EQ(fake.released, 0);
+
+	/* The next request gives the last slot back before reading. */
+	fake.result = IMG_H264_TYPE_PF;
+	CHECK(worker_request(&w, 2, 2000));
+	CHECK_EQ(s->res_seq, 2);
+	CHECK_EQ(s->result, IMG_H264_TYPE_PF);
+	CHECK(s->data == fake.buf[1]);
+	CHECK_EQ(s->data_size, 11);
+	CHECK_EQ(fake.released, 1);
+	CHECK_EQ(fake.max_outstanding, 1);
+
+	/* A wakeup without a new request reads nothing and answers nothing. */
+	CHECK(!worker_request(&w, 0, 100));
+	CHECK_EQ(fake.reads, 2);
+
+	/* A failed read: no data, no times, and the last slot given back. */
+	fake.result = IMG_NOT_EXIST;
+	CHECK(worker_request(&w, 3, 2000));
+	CHECK_EQ(s->result, IMG_NOT_EXIST);
+	CHECK(s->data == NULL);
+	CHECK_EQ(s->data_size, 0);
+	CHECK_EQ(s->ntimes, 0);
+	CHECK_EQ(fake.outstanding, 0);
+
+	fake.result = IMG_H264_TYPE_PF;
+	CHECK(worker_request(&w, 4, 2000));
+	CHECK_EQ(fake.outstanding, 1);
+	CHECK_EQ(__atomic_load_n(&s->reads, __ATOMIC_RELAXED), 4);
+	CHECK(__atomic_load_n(&s->wakeups, __ATOMIC_RELAXED) >= 5);
+
+	/* Stopping gives the held slot back; stopping twice is harmless. */
+	kvmv_worker_stop(&w);
+	CHECK_EQ(fake.outstanding, 0);
+	kvmv_worker_stop(&w);
+
+	/* It starts again, and a request it already answered is not read twice. */
+	CHECK_EQ(kvmv_worker_start(&w), 0);
+	CHECK(!worker_request(&w, 0, 100));
+	CHECK(worker_request(&w, 5, 2000));
+	CHECK_EQ(s->res_seq, 5);
+	CHECK_EQ(fake.reads, 4);
+	kvmv_worker_stop(&w);
+	CHECK_EQ(fake.outstanding, 0);
+	close(s->request_fd);
+	close(s->done_fd);
+}
+
 int main(void)
 {
 	test_split();
@@ -2042,6 +2222,7 @@ int main(void)
 	test_slots();
 	test_negotiate();
 	test_start_policy();
+	test_worker();
 
 	if (failures) {
 		fprintf(stderr, "%d of %d checks failed\n", failures, checks);

@@ -32,8 +32,10 @@ WARN := -Wall -Wextra -Wformat=2 -Wshadow -Wno-unused-parameter
 CFLAGS_COMMON := -std=gnu11 -O2 $(WARN) -I$(SERVER_INCLUDE) -Isrc
 
 LIB_SRCS := src/kvm_vision_v4l2.c src/kvmv_pipeline.c src/kvmv_policy.c \
-	src/kvmv_annexb.c src/kvmv_slots.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c
-HEADERS := $(wildcard src/*.h) $(SERVER_INCLUDE)/kvm_vision.h
+	src/kvmv_annexb.c src/kvmv_slots.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c \
+	src/kvmv_worker.c
+HEADERS := $(wildcard src/*.h) $(SERVER_INCLUDE)/kvm_vision.h \
+	$(SERVER_INCLUDE)/kvmv_native_capture.h
 
 # libjpeg-turbo's TurboJPEG, built from a pinned release by
 # tools/build-libjpeg-turbo.sh (needs cmake): once for the board, linked
@@ -84,12 +86,13 @@ $(BUILD)/kvmv-probe: tools/kvmv_probe.c src/kvmv_annexb.c $(HEADERS) | $(BUILD)
 		src/kvmv_annexb.c -ldl -lpthread
 
 $(BUILD)/test_host: test/test_host.c src/kvmv_annexb.c src/kvmv_policy.c \
-		src/kvmv_slots.c src/kvmv_pipeline.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c $(HEADERS) \
-		$(TURBO_HOST)/lib/libturbojpeg.a | $(BUILD)
+		src/kvmv_slots.c src/kvmv_pipeline.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c \
+		src/kvmv_worker.c $(HEADERS) $(TURBO_HOST)/lib/libturbojpeg.a | $(BUILD)
 	$(HOSTCC) $(CFLAGS_COMMON) -I$(TURBO_HOST)/include -O1 -g \
 		-fsanitize=address,undefined -fno-sanitize-recover=all -o $@ \
 		test/test_host.c src/kvmv_annexb.c src/kvmv_policy.c src/kvmv_slots.c \
-		src/kvmv_pipeline.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c $(TURBO_HOST)/lib/libturbojpeg.a
+		src/kvmv_pipeline.c src/kvmv_jpeg.c src/kvmv_hwjpeg.c src/kvmv_worker.c \
+		$(TURBO_HOST)/lib/libturbojpeg.a -lpthread
 
 test: $(BUILD)/test_host
 	./$(BUILD)/test_host

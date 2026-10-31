@@ -35,6 +35,7 @@
  * hidden by -fvisibility=hidden. */
 #pragma GCC visibility push(default)
 #include "kvm_vision.h"
+#include "kvmv_native_capture.h"
 #pragma GCC visibility pop
 #undef set_h264_fps
 #undef set_capture_fps
@@ -49,6 +50,7 @@ void set_capture_fps(uint8_t _fps);
 #include "kvmv_slots.h"
 #include "kvmv_jpeg.h"
 #include "kvmv_hwjpeg.h"
+#include "kvmv_worker.h"
 
 #define KVMV_CODEC_MJPEG 0
 #define KVMV_CODEC_H264 1
@@ -194,6 +196,11 @@ static unsigned int published_width, published_height, published_refresh;
 static pthread_t monitor_thread;
 static int monitor_valid;
 static int monitor_exit;
+
+/* The native capture worker (kvmv_native_capture_open), guarded by
+ * worker_lock. Never freed: the server keeps a pointer to its block. */
+static pthread_mutex_t worker_lock = PTHREAD_MUTEX_INITIALIZER;
+static struct kvmv_worker worker;
 
 /* ---- helpers ------------------------------------------------------- */
 
@@ -1855,6 +1862,8 @@ void kvmv_init(uint8_t _debug_info_en)
 
 void kvmv_deinit(void)
 {
+	/* First, so no read of the worker's runs into the teardown. */
+	kvmv_native_capture_close();
 	__atomic_store_n(&monitor_exit, 1, __ATOMIC_RELEASE);
 	if (monitor_valid) {
 		pthread_join(monitor_thread, NULL);
@@ -2107,4 +2116,46 @@ int kvmv_video_times(uint64_t *times, int n)
 	for (i = 0; i < n; i++)
 		times[i] = v[i];
 	return n;
+}
+
+/*
+ * Not part of kvm_vision.h, and not in Sipeed's library (ironkvm-dist#91):
+ * a thread of the library's own that makes kvmv_read_video calls for the
+ * server, so the server waits for a picture in its poller instead of in a
+ * blocking cgo call. kvmv_native_capture.h has the protocol; NanoKVM-Server
+ * looks both functions up with dlsym, behind KVM_NATIVE_CAPTURE.
+ */
+static const struct kvmv_worker_ops worker_ops = {
+	.read = kvmv_read_video,
+	.release = free_kvmv_data,
+	.times = kvmv_video_times,
+};
+
+struct kvmv_native_capture *kvmv_native_capture_open(uint32_t version)
+{
+	struct kvmv_native_capture *shared = NULL;
+
+	if (version != KVMV_NATIVE_CAPTURE_VERSION) {
+		log_msg("native capture: the server speaks version %u, this library %u",
+			version, KVMV_NATIVE_CAPTURE_VERSION);
+		return NULL;
+	}
+	pthread_mutex_lock(&worker_lock);
+	if (kvmv_worker_init(&worker, &worker_ops) != 0)
+		log_error_once("native capture eventfd", strerror(errno));
+	else if (kvmv_worker_start(&worker) != 0)
+		log_error_once("native capture thread", strerror(errno));
+	else
+		shared = &worker.shared;
+	pthread_mutex_unlock(&worker_lock);
+	if (shared != NULL)
+		DBG("native capture worker running");
+	return shared;
+}
+
+void kvmv_native_capture_close(void)
+{
+	pthread_mutex_lock(&worker_lock);
+	kvmv_worker_stop(&worker);
+	pthread_mutex_unlock(&worker_lock);
 }

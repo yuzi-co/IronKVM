@@ -13,6 +13,8 @@ func useServerSources(t *testing.T) (proc string) {
 	setVar(t, &procDir, proc)
 	setVar(t, &processStart, time.Unix(1790000000, 0))
 	setVar(t, &goRuntime, func() (uint64, int) { return 1048576, 42 })
+	setVar(t, &cgoCalls, func() int64 { return 1234 })
+	setVar(t, &nativeCapture, func() bool { return false })
 
 	return proc
 }
@@ -41,6 +43,12 @@ ironkvm_go_heap_bytes 1048576
 # HELP ironkvm_go_goroutines Goroutines in this server process.
 # TYPE ironkvm_go_goroutines gauge
 ironkvm_go_goroutines 42
+# HELP ironkvm_go_cgo_calls_total Calls from Go into C since the process started. With one P, each blocking one hands the P to another thread.
+# TYPE ironkvm_go_cgo_calls_total counter
+ironkvm_go_cgo_calls_total 1234
+# HELP ironkvm_capture_native 1 when video frames come from libkvm's capture worker (KVM_NATIVE_CAPTURE), 0 when the server calls the library for each frame.
+# TYPE ironkvm_capture_native gauge
+ironkvm_capture_native 0
 `
 	assertText(t, render(t, collectServer), want)
 }
@@ -85,5 +93,18 @@ func TestOnceVersionsReadsTheVersionsOnce(t *testing.T) {
 	}
 	if calls != 1 {
 		t.Fatalf("the versions were read %d times, want 1", calls)
+	}
+}
+
+// The gauge follows the capture worker, so a board check can tell which path
+// the frames took (KVM_NATIVE_CAPTURE).
+func TestServerReportsTheCaptureWorker(t *testing.T) {
+	useServerSources(t)
+	setVar(t, &versions, func() (string, string, string) { return "", "", "" })
+	setVar(t, &nativeCapture, func() bool { return true })
+
+	got := render(t, collectServer)
+	if !strings.Contains(got, "\nironkvm_capture_native 1\n") {
+		t.Fatalf("the worker was not reported:\n%s", got)
 	}
 }
