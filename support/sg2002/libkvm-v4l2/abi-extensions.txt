@@ -18,3 +18,13 @@ kvmv_set_keep_aspect
 # kvmv_read_video gop of 255 ask for no periodic keyframes (encoder GOP 0);
 # every keyframe after the first is then one the caller forces.
 kvmv_video_times
+#
+# kvmv_native_capture_open(version), kvmv_native_capture_close(): a thread of
+# the library's own that makes kvmv_read_video calls for the server and hands
+# each answer over through a shared block and two eventfds, so the server
+# waits for a picture without a blocking cgo call (ironkvm-dist#91). The
+# block's layout and the protocol are in server/include/kvmv_native_capture.h;
+# open answers NULL for a version other than the library's. kvmv_deinit stops
+# the thread. The server uses it only with KVM_NATIVE_CAPTURE=on.
+kvmv_native_capture_open
+kvmv_native_capture_close
