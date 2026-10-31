@@ -19,7 +19,7 @@
 #   RELEASE_OUT        where artifacts are written    (default ./release-out)
 #   OFFICIAL_APP       the pinned official application (default base/nanokvm_2.5.0.tar.gz)
 #   BASE_VERSION_FILE  the official version it is from (default base/version)
-#   REPO               the GitHub repository          (default yuzi-co/IronKVM)
+#   REPO               the GitHub repository          (default yuzi-co/ironkvm)
 #   BUILDER_IMAGE      the MaixCDK builder image      (default from BUILD_UID/GID)
 #   BUILD_UID/GID      the identity the builder runs as (default the host's own)
 
@@ -39,7 +39,7 @@ while [ $# -gt 0 ]; do
 done
 
 OUT=${RELEASE_OUT:-./release-out}
-REPO=${REPO:-yuzi-co/IronKVM}
+REPO=${REPO:-yuzi-co/ironkvm}
 OFFICIAL_APP=${OFFICIAL_APP:-base/nanokvm_2.5.0.tar.gz}
 
 [ -n "$VERSION" ] || { echo "usage: release.sh [--dry-run|--verify-only] X.Y.Z" >&2; exit 1; }

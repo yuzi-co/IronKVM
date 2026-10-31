@@ -38,7 +38,7 @@ because A2 assumes a controller that queues commands and this one does not.
 Installing replaces everything on the card, including the data partition.
 
 1. Download `ironkvm-<version>-sdcard.img.xz` from
-   [Releases](https://github.com/yuzi-co/IronKVM/releases).
+   [Releases](https://github.com/yuzi-co/ironkvm/releases).
 2. Check it against `SHA256SUMS`. That proves the download is intact. It is not
    signed, so it does not prove who built it: anybody who could replace the
    image could replace the checksums beside it.

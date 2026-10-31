@@ -96,7 +96,7 @@ check "the offline upload accepts an IronKVM package" \
 check "the offline upload still accepts an official package" \
     "$(grep -c 'nanokvm|ironkvm' "$OFFLINE")" "1"
 check "the releases link points at this fork" \
-    "$(grep -c 'github.com/yuzi-co/IronKVM/releases' "$OFFLINE")" "1"
+    "$(grep -c 'github.com/yuzi-co/ironkvm/releases' "$OFFLINE")" "1"
 check "the releases link no longer points at Sipeed" \
     "$(grep -c 'github.com/sipeed/NanoKVM/releases' "$OFFLINE")" "0"
 

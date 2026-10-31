@@ -123,7 +123,7 @@ export const Offline = ({ status, setStatus, setIsLocked, setErrMsg }: UpdatePro
 
             <a
               className="flex items-center text-neutral-500 hover:text-blue-500"
-              href="https://github.com/yuzi-co/IronKVM/releases"
+              href="https://github.com/yuzi-co/ironkvm/releases"
               target="_blank"
             >
               <ExternalLinkIcon size={15} />

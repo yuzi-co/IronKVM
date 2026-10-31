@@ -15,12 +15,12 @@ export const Community = () => {
     {
       name: t('settings.about.docs'),
       icon: <BookOpenIcon size={24} />,
-      url: 'https://github.com/yuzi-co/IronKVM#readme'
+      url: 'https://github.com/yuzi-co/ironkvm#readme'
     },
     {
       name: 'GitHub',
       icon: <GithubOutlined style={{ fontSize: '24px' }} />,
-      url: 'https://github.com/yuzi-co/IronKVM'
+      url: 'https://github.com/yuzi-co/ironkvm'
     },
     {
       name: t('settings.about.hardware'),

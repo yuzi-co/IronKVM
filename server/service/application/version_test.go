@@ -120,7 +120,7 @@ func TestParseLatestUsesTheManifestURLWhenPresent(t *testing.T) {
 	body := []byte(fmt.Sprintf(
 		`{"manifest_version":2,"version":"1.0.0","name":"nanokvm_1.0.0.tar.gz",`+
 			`"url":%q,"sha512":%q,"size":100,"size_bytes":100,"unpacked_size_bytes":200}`,
-		"https://github.com/yuzi-co/IronKVM/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz",
+		"https://github.com/yuzi-co/ironkvm/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz",
 		validSha512))
 
 	latest, err := parseLatest(body, baseURL)
@@ -128,7 +128,7 @@ func TestParseLatestUsesTheManifestURLWhenPresent(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 
-	want := "https://github.com/yuzi-co/IronKVM/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz"
+	want := "https://github.com/yuzi-co/ironkvm/releases/download/v1.0.0/nanokvm_1.0.0.tar.gz"
 	if latest.Url != want {
 		t.Fatalf("download URL = %q, want %q", latest.Url, want)
 	}

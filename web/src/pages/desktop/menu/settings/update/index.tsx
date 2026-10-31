@@ -184,7 +184,7 @@ export const Update = ({ setIsLocked }: UpdateProps) => {
           <Button
             type="link"
             size="small"
-            href="https://github.com/yuzi-co/IronKVM/releases"
+            href="https://github.com/yuzi-co/ironkvm/releases"
             target="_blank"
           >
             {t('settings.update.releaseNotes')}
