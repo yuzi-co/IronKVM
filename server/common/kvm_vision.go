@@ -9,6 +9,7 @@ package common
 	#include <stdint.h>
 	#include <time.h>
 	#include "kvm_vision.h"
+	#include "kvmv_native_capture.h"
 
 	#ifndef RTLD_DEFAULT
 	#define RTLD_DEFAULT ((void *)0)
@@ -181,11 +182,34 @@ package common
 		out[1] = (int64_t)t[1] * 1000LL;
 		return 5;
 	}
+
+	// kvmv_native_capture_open is a libkvm-v4l2 extension (ironkvm-dist#91):
+	// the capture worker of native_capture.go. Found at run time like the
+	// others. NULL when the library has none, or speaks another version of
+	// the shared block, or the worker cannot start.
+	static int kvmv_native_capture_available(void)
+	{
+		return dlsym(RTLD_DEFAULT, "kvmv_native_capture_open") != NULL;
+	}
+
+	static struct kvmv_native_capture *kvmv_native_capture_start(void)
+	{
+		struct kvmv_native_capture *(*fn)(uint32_t) =
+			(struct kvmv_native_capture *(*)(uint32_t))dlsym(RTLD_DEFAULT,
+									 "kvmv_native_capture_open");
+
+		if (fn == NULL)
+			return NULL;
+		return fn(KVMV_NATIVE_CAPTURE_VERSION);
+	}
 */
 import "C"
 import (
+	"errors"
+	"fmt"
 	"os"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 
@@ -323,6 +347,10 @@ func (k *KvmVision) ReadH264(width uint16, height uint16, bitRate uint16) (data 
 //
 // The codec numbering here is libkvm's public one, CodecH264 and CodecH265.
 // libkvm converts to mmf's, which runs the other way.
+//
+// With KVM_NATIVE_CAPTURE=on and a library that has the capture worker, the
+// read goes through the worker instead (native_capture.go): the same call, made
+// on the library's thread, with no cgo call here.
 func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate uint16, gop uint8, fps uint8) (data []byte, result int) {
 	var (
 		kvmData  *C.uint8_t
@@ -330,6 +358,24 @@ func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate 
 	)
 
 	if !captureLifecycle.withLive(func() {
+		if native := nativeVideoCapture(); native != nil {
+			var err error
+			data, result, err = native.read(nativeRequest{
+				width: width, height: height, bitrate: bitRate,
+				codec: codec, gop: gop, fps: fps,
+			})
+			if err == nil {
+				nativeVideoLast.Store(true)
+				reportCaptureRead(&h264Reads, result)
+
+				return
+			}
+			log.Errorf("native capture: %v; one call per frame from now on", err)
+			nativeVideo.Store(nil)
+			native.close()
+		}
+		nativeVideoLast.Store(false)
+
 		result = int(C.kvmv_read_video(
 			C.uint16_t(width),
 			C.uint16_t(height),
@@ -362,6 +408,13 @@ func (k *KvmVision) ReadVideo(width uint16, height uint16, codec uint8, bitRate 
 func (k *KvmVision) LastVideoTimes() (VideoTimes, bool) {
 	var raw [5]C.int64_t
 
+	// The worker sent the times with the frame.
+	if nativeVideoLast.Load() {
+		if native := nativeVideo.Load(); native != nil {
+			return native.lastTimes()
+		}
+	}
+
 	if C.kvmv_video_times_wall(&raw[0]) != 5 {
 		return VideoTimes{}, false
 	}
@@ -373,6 +426,93 @@ func (k *KvmVision) LastVideoTimes() (VideoTimes, bool) {
 		EncodeEnd:   time.Unix(0, int64(raw[3])),
 		Returned:    time.Unix(0, int64(raw[4])),
 	}, true
+}
+
+var (
+	nativeVideoOnce sync.Once
+	// nativeVideo is the capture worker reads go through, nil while they
+	// are per-frame calls. Only the capture loop reads; the metrics ask
+	// whether it is set.
+	nativeVideo atomic.Pointer[nativeCapture]
+	// nativeVideoLast says the last ReadVideo went through the worker, so
+	// LastVideoTimes answers from its answer.
+	nativeVideoLast atomic.Bool
+)
+
+// nativeVideoCapture decides once, on the first read, whether reads go
+// through the capture worker, and starts it if so. The library is only asked
+// when KVM_NATIVE_CAPTURE asks for the worker.
+func nativeVideoCapture() *nativeCapture {
+	nativeVideoOnce.Do(func() {
+		nativeVideo.Store(chooseNativeCapture(os.Getenv(nativeCaptureEnv), nativeCaptureLibrary{
+			available: func() bool {
+				return C.kvmv_native_capture_available() != 0
+			},
+			open: func() (nativePort, int, int, error) {
+				shared := C.kvmv_native_capture_start()
+				if shared == nil {
+					return nil, -1, -1, errors.New("kvmv_native_capture_open answered NULL (the library logs why)")
+				}
+				if uint32(shared.version) != C.KVMV_NATIVE_CAPTURE_VERSION ||
+					uintptr(shared.size) != unsafe.Sizeof(*shared) {
+					return nil, -1, -1, fmt.Errorf("the library's block is version %d, %d bytes; the server's %d, %d bytes",
+						shared.version, shared.size, C.KVMV_NATIVE_CAPTURE_VERSION, unsafe.Sizeof(*shared))
+				}
+
+				return libraryNativePort{shared: shared}, int(shared.request_fd), int(shared.done_fd), nil
+			},
+		}))
+	})
+
+	return nativeVideo.Load()
+}
+
+// NativeCaptureActive says whether video reads go through libkvm's capture
+// worker (KVM_NATIVE_CAPTURE).
+func NativeCaptureActive() bool {
+	return nativeVideo.Load() != nil
+}
+
+// libraryNativePort is the worker's block in the library's memory. Reading and
+// writing it is plain memory access: no cgo call.
+type libraryNativePort struct {
+	shared *C.struct_kvmv_native_capture
+}
+
+func (p libraryNativePort) put(r nativeRequest, seq uint32) {
+	s := p.shared
+	s.width = C.uint16_t(r.width)
+	s.height = C.uint16_t(r.height)
+	s.bitrate = C.uint16_t(r.bitrate)
+	s.codec = C.uint8_t(r.codec)
+	s.gop = C.uint8_t(r.gop)
+	s.fps = C.uint8_t(r.fps)
+	atomic.StoreUint32((*uint32)(unsafe.Pointer(&s.req_seq)), seq)
+}
+
+func (p libraryNativePort) answered() uint32 {
+	return atomic.LoadUint32((*uint32)(unsafe.Pointer(&p.shared.res_seq)))
+}
+
+func (p libraryNativePort) take() nativeAnswer {
+	s := p.shared
+	a := nativeAnswer{
+		seq:    p.answered(),
+		result: int(s.result),
+		ntimes: min(int(s.ntimes), len(s.times)),
+		mono:   int64(s.mono_ns),
+		real:   int64(s.real_ns),
+	}
+	for i := 0; i < a.ntimes; i++ {
+		a.times[i] = uint64(s.times[i])
+	}
+	if a.result >= 0 && s.data != nil && s.data_size > 0 {
+		size := int(s.data_size)
+		a.data = make([]byte, size)
+		copy(a.data, unsafe.Slice((*byte)(unsafe.Pointer(s.data)), size))
+	}
+
+	return a
 }
 
 func (k *KvmVision) SetHDMI(enable bool) int {

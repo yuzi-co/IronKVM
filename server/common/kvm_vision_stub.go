@@ -109,3 +109,8 @@ func librarySetKeepAspect(keep bool) bool { return false }
 func (k *KvmVision) Close() {
 	captureLifecycle.stop(func() {})
 }
+
+// NativeCaptureActive answers false off-device: there is no capture worker.
+func NativeCaptureActive() bool {
+	return false
+}

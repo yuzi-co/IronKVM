@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"NanoKVM-Server/common"
 	"NanoKVM-Server/service/vm"
 )
 
@@ -26,6 +27,14 @@ var (
 		runtime.ReadMemStats(&stats)
 		return stats.HeapAlloc, runtime.NumGoroutine()
 	}
+
+	// cgoCalls counts the calls from Go into C since the process started. Each
+	// one that blocks long enough costs a P handoff on a board with one P, and
+	// with libkvm-v4l2's capture worker (KVM_NATIVE_CAPTURE) a frame costs none.
+	cgoCalls = runtime.NumCgoCall
+
+	// nativeCapture says whether video frames come from that worker.
+	nativeCapture = common.NativeCaptureActive
 )
 
 const (
@@ -34,6 +43,8 @@ const (
 	helpResident   = "Resident memory of this server process, from /proc/self/status VmRSS."
 	helpGoHeap     = "Bytes of allocated Go heap objects."
 	helpGoroutines = "Goroutines in this server process."
+	helpCgoCalls   = "Calls from Go into C since the process started. With one P, each blocking one hands the P to another thread."
+	helpNative     = "1 when video frames come from libkvm's capture worker (KVM_NATIVE_CAPTURE), 0 when the server calls the library for each frame."
 )
 
 func collectServer(w *Writer) {
@@ -51,6 +62,13 @@ func collectServer(w *Writer) {
 	heap, goroutines := goRuntime()
 	w.Gauge("ironkvm_go_heap_bytes", helpGoHeap, float64(heap))
 	w.Gauge("ironkvm_go_goroutines", helpGoroutines, float64(goroutines))
+	w.Counter("ironkvm_go_cgo_calls_total", helpCgoCalls, float64(cgoCalls()))
+
+	native := 0.0
+	if nativeCapture() {
+		native = 1
+	}
+	w.Gauge("ironkvm_capture_native", helpNative, native)
 }
 
 // onceVersions wraps read so it runs on the first call only, and every later
